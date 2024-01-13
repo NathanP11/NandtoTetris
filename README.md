@@ -9,7 +9,7 @@ Part 1 mostly involved developing Gate logic and utlimately, a Computer (RAM + B
 Part 2 involved writing multiple compilers and an operating system. 
   The OS, and Snake game are writen in a High level Java like language, Jack which is implemented just like Java.
 
-  Java => VM (bytecode) Compiler => Java Virtual Machine => Machine Code Compiler => Phone/PC Assembler => Binary
+  Java => bytecode Compiler => JVM => Machine Code Compiler => Phone/PC Assembler => Binary
   
   Jack => Jack Compiler          => Jack VM              => VM Translator         => Hack Assembler => Binary
 

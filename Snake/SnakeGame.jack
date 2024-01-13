@@ -1,0 +1,215 @@
+/**
+ * Implements the Snake game.
+ * This simple game allows the user to move a black snake around
+ * the screen, and eat food, growing the snake.
+ * The 4 arrow keys are used to move the square up, down, left, and right.
+ * The 'q' key is used to quit the game.
+ * The game ends when the snake eats itself
+ */
+
+class SnakeGame {
+   field array Snake; 						// an array of squares represeting the snake
+   field int SnakeLength, timerY, timerX;	// used for 'random' number
+   field int ASize, i; 	  					// size of the snake
+   field Square head, lastSquare; // the Head of the snake
+											// last tail of the snake is tracked for adding onto
+   field Food food; 						// the food for the snake
+   field int Ldirection, Cdirection,Tdirection,ASize; 	
+											// last direction for tracking tail, current and target directions
+											// 0=none, 1=up, 2=down, 3=left, 4=right
+   
+
+   /** Constructs a new Snake Game. */
+   constructor SnakeGame new() {     // Creates a ASize by ASize pixels square and positions it at the top-left of the screen.
+      let timerY = 0;  let timerX = 0;  let SnakeLength = 1;
+	  let ASize = 20;
+	  let head = Square.new(0, 0 , ASize); let lastSquare = head;
+	  let Snake = Array.new(256); 								//256 = max snake length
+	  let Snake[0] = head; 										//Snake[0] points to head square
+	  let food = Food.new(200, 150 , ASize  );
+      let Tdirection = 0;  										// initial state is no movement
+      return this;
+   }
+
+   /** Disposes this game. */
+   method void dispose() {
+      do head.dispose();
+	  do food.dispose();
+      do Memory.deAlloc(this);
+      return;
+   }
+
+   /** Moves the Snake in the current Tdirection. */
+   method void moveSquare() {
+		//snake cannot travel backward, and always keeps moving
+		// 0=none, 1=up, 2=down, 3=left, 4=right
+		
+      if (Tdirection = 1) { do setTimer(1);
+							if (~(Cdirection = 2)) { do head.move(1);    let Cdirection = Tdirection;}
+							else { do head.move(2);}}
+      if (Tdirection = 2) { do setTimer(2);
+							if (~(Cdirection = 1)) { do head.move(2);  let Cdirection = Tdirection;}
+							else { do head.move(1);} }
+      if (Tdirection = 3) { do setTimer(3);
+							if (~(Cdirection = 4)) { do head.move(3);  let Cdirection = Tdirection;}
+							else { do head.move(4);} }
+      if (Tdirection = 4) { do setTimer(4);
+							if (~(Cdirection = 3)) { do head.move(4); let Cdirection = Tdirection;}
+							else { do head.move(3);} }
+	  
+	  
+	  do moveSnake(Cdirection);
+	  do pathCheck();
+	  
+      do Sys.wait(10);  // delays the next movement
+      return;
+   }
+   
+   // 0=none, 1=up, 2=down, 3=left, 4=right
+	method void moveSnake( int dir ){
+		var Square curr, prev;
+		var int currX, prevX;
+		let Ldirection = dir;
+		if ( SnakeLength < 1 ){ return;}
+		let prev = Snake[(i-1)];
+		let i = 1;
+		while ( i < SnakeLength ) {
+			let curr = Snake[i];
+			let prev = Snake[(i-1)];
+			//move Snake[i] based on its position
+			
+			if( dir = 1 ){
+				if(   curr.getX() = prev.getX() ) 			  { if( ~(checkOverlap(curr.getX()-2, curr.getY()-2, ASize+4,prev.getX(), prev.getY(), ASize))){
+																	do curr.move(dir); }} 	//move snake body square up
+				else{ 	if( (curr.getX() - prev.getX()) > 0 ) { let dir = 3; do curr.move(dir); }	//move snake body square left
+						if( (curr.getX() - prev.getX()) < 0 ) { let dir = 4; do curr.move(dir); }}}	//move snake body square right
+			if( dir = 2 ){
+				if(   curr.getX() = prev.getX() ) 			  { if( ~(checkOverlap(curr.getX()-2, curr.getY()-2, ASize+4,prev.getX(), prev.getY(), ASize))){	     
+																	do curr.move(dir); }} 	//move snake body square down
+				else{ 	if( (curr.getX() - prev.getX()) > 0 ) { let dir = 3; do curr.move(dir); }	//move snake body square left
+						if( (curr.getX() - prev.getX()) < 0 ) { let dir = 4; do curr.move(dir); }}}	//move snake body square right
+			
+			if( dir = 3 ){
+				if(   curr.getY() = prev.getY() ) 			  { if( ~(checkOverlap(curr.getX()-2, curr.getY()-2, ASize+1,prev.getX(), prev.getY(), ASize))){		     
+																	do curr.move(dir); }} 	//move snake body square left
+				else{ 	if( (curr.getY() - prev.getY()) > 0 ) { let dir = 1; do curr.move(dir); }	//move snake body square up
+						if( (curr.getY() - prev.getY()) < 0 ) { let dir = 2; do curr.move(dir); }}}	//move snake body square down
+			
+			if( dir = 4 ){
+				if(   curr.getY() = prev.getY() ) 			  { if( ~(checkOverlap(curr.getX()-2, curr.getY()-2, ASize+4,prev.getX(), prev.getY(), ASize))){
+																	do curr.move(dir); }} 	//move snake body square right
+				else{ 	if( (curr.getY() - prev.getY()) > 0 ) { let dir = 1; do curr.move(dir); }	//move snake body square up
+						if( (curr.getY() - prev.getY()) < 0 ) { let dir = 2; do curr.move(dir); }}}	//move snake body square down
+			
+			let i = i + 1;
+			
+		} //while
+		
+		let Ldirection = dir;
+		return;
+	}
+	
+	//
+	method void pathCheck() {
+		var boolean overlap;
+		var Square curr;
+		let overlap = checkOverlap(food.getX(),food.getY(),food.getS(),head.getX(),head.getY(),head.getS());
+		if ( overlap ) { 
+				// creat new food
+			do food.erase(); 
+			do food.setX(timerX); do food.setY(timerY);
+			do food.draw();
+				// grow snake
+			let i = 1;
+			while( checkOverlap(food.getX(),food.getY(),food.getS(),head.getX(),head.getY(),head.getS()) ) {
+				// if food spawns on head, relocate it
+				do setTimer(i);
+				do food.erase(); 
+				do food.setX(timerX); do food.setY(timerY);
+				do food.draw();
+				let i = i + 1;
+			}	
+				
+				
+			if( Ldirection = 1) {let lastSquare = Square.new(lastSquare.getX(), (lastSquare.getY() + ASize) , ASize);}
+			if( Ldirection = 2) {let lastSquare = Square.new(lastSquare.getX(), (lastSquare.getY() - ASize) , ASize);}
+			if( Ldirection = 3) {let lastSquare = Square.new( (lastSquare.getX() + ASize), lastSquare.getY()  , ASize);}
+			if( Ldirection = 4) {let lastSquare = Square.new( (lastSquare.getX() - ASize), lastSquare.getY()  , ASize);}
+			
+			
+			let Snake[SnakeLength] = lastSquare;
+			let SnakeLength = SnakeLength + 1;
+		}   
+		
+		//check overlap of snake eating itself
+		// game over
+		
+		let i = 3;
+		while ( i < SnakeLength ) {
+			let curr = Snake[i];
+			if( checkOverlap(curr.getX(),curr.getY(),curr.getS(),head.getX(),head.getY(),head.getS())){
+				do Output.printString("GAME OVER");
+				do Output.println();
+				do Output.printString("SCORE: "); do Output.printInt(SnakeLength);
+				do Sys.halt();
+			}
+			let i = i+1;
+		} // while
+		
+		return;
+	}
+
+   method boolean checkOverlap( int X1 , int Y1 , int S1, int X2 , int Y2 , int S2) {
+   // if area of overlap is positive, rectangle overlap == true
+      var int MaxX1,MinX2,MaxY1,MinY2;
+	  var boolean xPositive, yPositive;
+	  
+	  let MaxX1 = Math.max(X1,X2);	  let MinX2 = Math.min((X1+S1),(X2+S2));
+	  let MaxY1 = Math.max(Y1,Y2);	  let MinY2 = Math.min((Y1+S1),(Y2+S2));
+	  
+	  if( MinX2 > MaxX1 ) {	if( MinY2 > MaxY1 ) { return true;}  }
+	  	  
+      return false;
+	  
+   }
+
+   /** Runs the game: handles the user's inputs and moves the snake accordingly */
+   method void run() {
+      var char key;  // the key currently pressed by the user
+      var boolean exit;
+      let exit = false;
+      
+      while (~exit) {
+         // waits for a key to be pressed
+         while (key = 0) {
+            let key = Keyboard.keyPressed();
+            do moveSquare();
+         }
+         if (key = 81)  { let exit = true; }     // q key
+         if (key = 131) { let Tdirection = 1; }   // up arrow
+         if (key = 133) { let Tdirection = 2; }   // down arrow
+         if (key = 130) { let Tdirection = 3; }   // left arrow
+         if (key = 132) { let Tdirection = 4; }   // right arrow
+
+         // waits for the key to be released
+         while (~(key = 0)) {
+            let key = Keyboard.keyPressed();
+            do moveSquare();
+         }
+     } // while
+     return;
+   }
+   
+      /** control semi random timer for food generation. */
+   method void setTimer( int x) {
+      let x = x - 1;
+	  let timerY = timerY + 1;     let timerX = timerX + 1;
+	  if( timerY > (255 - food.getS()) ) { let timerY = (x * 50); }
+	  if( timerX > (511 - food.getS()) ) { let timerX = (x * 100); }
+      return;
+   }
+   
+}
+
+
+

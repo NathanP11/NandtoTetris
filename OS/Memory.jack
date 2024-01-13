@@ -1,0 +1,83 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Memory.jack
+
+/**
+ * This library provides two services: direct access to the computer's main
+ * memory (RAM), and allocation and recycling of memory blocks. The Hack RAM
+ * consists of 32,768 words, each holding a 16-bit binary number.
+ */ 
+class Memory {
+	
+	static Array ram;
+	static Array heap;
+	static Array freeList;
+	
+    /** Initializes the class. */
+    function void init() {
+		let ram = 0;
+		let heap = 2048;
+		let freeList = 2048;		//array pointer
+		let heap[0] = 0;		//next = null
+		let heap[1] = 14335;	//length
+		return;
+    }
+
+    /** Returns the RAM value at the given address. */
+    function int peek(int address) {
+		var int n;
+		let n = ram[address];
+		return n;
+    }
+
+    /** Sets the RAM value at the given address to the given value. */
+    function void poke(int address, int value) {
+		let ram[address] = value;
+		return;
+    }
+
+    /** Finds an available RAM block of the given size and returns
+     *  a reference to its base address. */
+    function int alloc(int size) {
+		var int loc;
+		var int temp;
+		var int freeSize;
+		var boolean myBool;
+		
+		let loc = freeList - 2048; // start searching in the freeList
+		let myBool = true;
+		
+		while(myBool){
+			let freeSize = heap[loc+1];
+			if( freeSize > (size+1) ){  // segment.size >= size +2
+				let myBool = false;
+				let temp = loc + size + 2; // point temp to next location
+				let heap[temp] = 0;
+				let heap[temp + 1] = heap[loc + 1] - size - 2;
+				let heap[loc] = temp;
+				let heap[loc + 1] = size;
+				let freeList = temp + 2048;
+			}
+			else{
+				let loc = heap[loc];
+				if( loc = 0 ){
+					//error no memory
+				}
+			}
+		}//endwhile
+		
+		return (loc + 2 + 2048);
+    }
+
+    /** De-allocates the given object (cast as an array) by making
+     *  it available for future allocations. */
+    function void deAlloc(Array o) {
+		var int loc;
+		
+		let loc = freeList - 2048;
+		let heap[loc] = (o - 2048);
+		
+		return;
+    }    
+}

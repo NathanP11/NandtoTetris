@@ -1,0 +1,190 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Screen.jack
+
+/**
+ * A library of functions for displaying graphics on the screen.
+ * The Hack physical screen consists of 256 rows (indexed 0..255, top to bottom)
+ * of 512 pixels each (indexed 0..511, left to right). The top left pixel on 
+ * the screen is indexed (0,0).
+ */
+class Screen {
+	
+	static boolean color;
+	
+    /** Initializes the Screen. */
+    function void init() {
+		let color = true;
+		return;
+    }
+
+    /** Erases the entire screen. */
+    function void clearScreen() {
+		var int counter;
+		var boolean myBool;
+		
+		let myBool = true;
+		
+		while( myBool ) {
+			do Screen.drawRectangle(0 ,counter, 511 , counter);
+			if( counter = 255 ){
+				let myBool = false;
+			}
+		}
+		
+		
+		return;
+    }
+
+    /** Sets the current color, to be used for all subsequent drawXXX commands.
+     *  Black is represented by true, white by false. */
+    function void setColor(boolean b) {
+		let color = b; 
+		return;
+    }
+
+    /** Draws the (x,y) pixel, using the current color. */
+    function void drawPixel(int x, int y) {
+		var int addr;
+		var int mask;
+		var int value;
+		var boolean myBool;
+		var int counter;
+		
+		let myBool = true;
+		let counter = 1;
+		if( x = 1 ){
+			let myBool = false;
+		}
+		
+		let addr = (32 * y) + (x / 16);
+		let value = Memory.peek( 16384 + addr );
+		let mask = 1;
+		while( myBool ){
+			let mask = mask + mask;
+			let counter = counter + 1;
+			if( counter = x ){
+				let myBool = false;
+			}
+		} //check for off by one error
+		
+		//false is white
+		if( color ){
+			let value = value | mask;
+		}
+		else{
+			let mask = mask & (-1);
+			let value = value & mask;
+		}
+		
+		
+		
+		do Memory.poke(addr,value);
+		return;
+    }
+
+    /** Draws a line from pixel (x1,y1) to pixel (x2,y2), using the current color. */
+    function void drawLine(int x1, int y1, int x2, int y2) {
+		var int a, b, diff;
+		var boolean myBool;
+		
+		let myBool = true;
+		
+		if( x1 > x2){ // make x1 always smaller than x2
+			let diff = x2;		let x2 = x1;		let x1 = diff;
+		}
+		if( y1 > y2){ // make y1 always smaller than y2
+			let diff = y2;		let y2 = x1;		let y1 = diff;
+		}
+		
+		
+		if( x1 = x2){ // vertical
+			let diff = y2 - y1;
+			while( myBool ){
+				do Screen.drawPixel( x1, (y1+b) );
+				let b = b + 1;
+				if( b = diff ) {	let myBool = false;	}
+			}
+			return;
+		}
+		if( y1 = y2){ // horizonal
+			let diff = x2 - x1;
+			while( myBool ){
+				do Screen.drawPixel( x1 + a , y1 );
+				let a = a + 1;
+				if( a = diff ) {	let myBool = false;	}
+			}
+			return;
+		}
+		
+		let x2 = x2 - x1; //use x2 as dx
+		let y2 = y2 - y1; //use y2 as dy
+		
+		while( myBool ){
+			do Screen.drawPixel( x1 + a , y1 + b );
+			if( diff < 0 ) {
+				let a = a + 1;
+				let diff = diff + y2;
+			}
+			else{
+				let b = b + 1;
+				let diff = diff + x2;
+			}
+			if( a < (x2 + 1) ){
+				if( b < (y2 + 1) ){
+					let myBool = false;
+				}
+			}
+		}
+		
+		return;
+    }
+
+    /** Draws a filled rectangle whose top left corner is (x1, y1)
+     * and bottom right corner is (x2,y2), using the current color. */
+    function void drawRectangle(int x1, int y1, int x2, int y2) {
+		var int counter, diff;
+		var boolean myBool;
+		
+		let myBool = true;
+		let diff = y2 - y1;
+		
+		while( myBool ) {
+			do Screen.drawLine(x1, y1 + counter, x2, y2 + counter);
+			let counter = counter + 1;
+			if( counter = diff ){
+				let myBool = false;
+			}
+		}
+		
+		
+		return;
+    }
+
+    /** Draws a filled circle of radius r<=181 around (x,y), using the current color. */
+    function void drawCircle(int x, int y, int r) {
+		var int counter, temp;
+		var boolean myBool;
+		
+		if( r > 181 ){	return;	}
+		
+		let myBool = true;
+				
+		while( myBool ) {
+			let temp = Math.sqrt( ( (r+r) - (counter+counter) ) );
+			
+			
+			do Screen.drawLine(x - temp, y + r - counter , x + temp, y + r - counter);
+			do Screen.drawLine(x - temp, y - r + counter , x + temp, y - r + counter);
+			
+			let counter = counter + 1;
+			
+			if( counter = r ){
+				let myBool = false;
+			}
+		}
+		
+		return;
+    }
+}

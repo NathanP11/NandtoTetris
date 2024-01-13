@@ -1,0 +1,176 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Math.jack
+
+/**
+ * A library of commonly used mathematical functions.
+ * Note: Jack compilers implement multiplication and division using OS method calls.
+ */
+class Math {
+	
+	static Array twoToThe;
+	
+	
+    function void init() {    
+		let twoToThe = Array.new(16);
+		return;
+	}
+
+    /** Returns the absolute value of x. */
+    function int abs(int x) {
+		if ( x < 0 ) {		return -x;	}
+		return x;
+    }
+
+    /** Returns the product of x and y. 
+     *  When a Jack compiler detects the multiplication operator '*' in the 
+     *  program's code, it handles it by invoking this method. In other words,
+     *  the Jack expressions x*y and multiply(x,y) return the same value.
+     */
+    function int multiply(int x, int y) {
+		var int sum, shiftedX, i;
+		var boolean myBool, whileBool;
+		
+		let sum = 0;		let i = 0;
+		let shiftedX = x;	let whileBool = true;
+		do Math.bit( y );
+		
+		while( whileBool ){
+			if( twoToThe[i] = 1 ) {	let myBool = true;	}	
+			else{					let myBool = false;	}
+
+			if( myBool ){	let sum = sum + shiftedX;}
+			let shiftedX = shiftedX + shiftedX;
+			let i = i + 1;
+			if( i = 16 ) {	let whileBool = false;	}
+		}
+		return sum;
+    }
+
+    /** Returns the integer part of x/y.
+     *  When a Jack compiler detects the multiplication operator '/' in the 
+     *  program's code, it handles it by invoking this method. In other words,
+     *  the Jack expressions x/y and divide(x,y) return the same value.
+     */
+    function int divide(int x, int y) {
+		var int sign, q;
+		
+		let sign = 1;
+		if( x < 0 ) { let sign = -1;		}
+		if( y < 0 ){  let sign = sign * -1;	}
+		//if( x = 0 | y = 0 ) {return 0; 	}
+		
+		let x = Math.abs(x);
+		let y = Math.abs(y);
+		
+		if( y > x ) { return 0;}
+		if( (2*y) < 0 ) { return 0; }  //overflow of y
+		let q = Math.divide(x, 2*y);
+		
+		if( ( x - (2*q*y) ) < y ){
+			return (2 * q  * sign);
+		}
+		else{
+			return ( 2 * q + 1 ) ;
+		}
+    }
+
+    /** Returns the integer part of the square root of x. */
+    function int sqrt(int number) {
+		var int square, low, high, mid;
+		var boolean myBool;
+
+		let myBool = true;
+		let high = number;
+		if( high > 18383 ){
+			let high = 182; //largest square root possible 16 bit
+			let low = 100;
+		}
+		//handle negative number
+
+		while( myBool ) {
+			let mid = ( low + high ) / 2;
+			let square = mid * mid;
+			
+			//if( square < 0 ) { 	let square = 32767;	}
+			
+			if( (number / mid) = mid ) {
+				return mid;
+			}
+			else{
+				if( (square < number) ){
+					let low = mid + 1;
+				}
+				else{
+					let high = mid - 1;
+				}
+			}
+			
+			
+			
+			
+			
+			if( low > (high-1) ) {
+				let myBool = false;
+			}
+		}
+		
+		return low;
+    }
+
+    /** Returns the greater number. */
+    function int max(int a, int b) {
+		if( a > b ) { return a; }
+		return b;
+    }
+
+    /** Returns the smaller number. */
+    function int min(int a, int b) {
+		if( a < b ) { return a; }
+		return b;
+    }
+	
+	// sets up array 0..15 twoToThe[i]
+	function void bit(int x){
+		var int mask, position;
+    	var boolean loop;
+		
+    	let mask = 1;
+    	let loop = true;
+		
+    	while (loop) {
+    	    if (~(position = 16)) {
+    	
+    	        if (~((x & mask) = 0)) {
+    	            let twoToThe[position] = 1;
+					//do Memory.poke(8000 + position, 1);
+       	        }
+    	        else {
+					let twoToThe[position] = 0;
+    	            //do Memory.poke(8000 + position, 0);
+      	        }    
+    	    }
+    	    else {
+    	        let loop = false;
+    	    }
+			
+			let position = position + 1;
+			let mask = mask + mask;
+			
+    	} //while
+		
+    	return;
+	}
+	
+	/** Returns the next mask (the mask that should follow the given mask). */
+    function int nextMask(int mask) {
+    	if (mask = 0) {
+    	    return 1;
+    	}
+    	else {
+	    return mask * 2;
+    	}
+    }
+	
+}

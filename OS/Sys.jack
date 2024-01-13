@@ -1,0 +1,76 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Sys.jack
+
+/**
+ * A library that supports various program execution services.
+ */
+class Sys {
+
+    /** Performs all the initializations required by the OS. */
+    function void init() {
+		do Memory.init();
+		
+		do Math.init();
+		do Output.init();
+		do Keyboard.init();
+		
+		
+		do Screen.init();
+		
+		do Main.main();
+		do Sys.halt();
+		return;
+    }
+
+    /** Halts the program execution. */
+    function void halt() {
+		var String e1;
+		let e1 = String.new(13);
+		let e1 = "SYSTEM HALTED";
+		do Output.printString( e1 );
+		
+		while (true){
+			//infinite loop
+		}
+		return;
+    }
+
+    /** Waits approximately duration milliseconds and returns.  */
+    function void wait(int duration) {
+		var int i, delayFactor;
+		var boolean myBool;
+		
+		let delayFactor = duration * 1;
+		let myBool = 0;
+		
+		while( myBool) {
+			let i = i + 1;
+			if( i = delayFactor ) {
+				let myBool = false;
+			}
+		}
+		
+		return;
+    }
+
+    /** Displays the given error code in the form "ERR<errorCode>",
+     *  and halts the program's execution. */
+    function void error(int errorCode) {
+		var String e1, e2;
+		
+		let e1 = String.new(4);
+		let e2 = String.new(1);
+		
+		let e1 = "ERR<";
+		let e2 = ">";
+		
+		do Output.printString( e1 );
+		do Output.printInt( errorCode );
+		do Output.printString( e2  );
+		do Output.println();
+		do Sys.halt();
+		return;
+    }
+}

@@ -14,6 +14,6 @@ Part 2 involved writing multiple compilers and an operating system.
   Jack => Jack Compiler          => Jack VM              => VM Translator         => Hack Assembler => Binary
 
 
-  Implementing every level of this process was a very rewarding experience. 
+  Implementing every level of this process was a very rewarding experience. It was alot of work over a 3 month period
   
 Nathan P.   1/12/24
